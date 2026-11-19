@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RestController
 public class AuthController {
     private static final long WINDOW_MS = 15 * 60 * 1000L;
-    private static final int MAX_ATTEMPTS = 10;
+    private static final int MAX_ATTEMPTS = 5;
 
     private final AdminRepository admins;
     private final JwtService jwt;
