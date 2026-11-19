@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Admin | Madhura Sarees</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Jost:wght@400;500&display=swap">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header><div class="wrap"><a class="brand" href="index.html">Madhura Sarees</a><nav><a href="index.html">View site</a><a href="#" id="logout" hidden>Log out</a></nav></div></header>
+<main class="admin"><div class="wrap">
+
+<div class="panel login" id="login">
+  <h2>Admin login</h2>
+  <form id="loginForm">
+    <label for="email">Email</label><input id="email" type="email" autocomplete="username" required>
+    <label for="password">Password</label><input id="password" type="password" autocomplete="current-password" required>
+    <div class="row"><button class="btn" type="submit">Log in</button></div>
+    <p class="msg" id="loginMsg" role="status"></p>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <div class="toolbar"><h2>Products</h2><button class="btn" id="newBtn">Add product</button></div>
+  <div class="panel" id="formPanel" hidden>
+    <h3 id="formTitle">Add product</h3>
+    <form id="pform">
+      <label for="f-name">Name</label><input id="f-name" maxlength="120" required>
+      <div class="two">
+        <div><label for="f-cat">Category</label><select id="f-cat"></select></div>
+        <div id="subWrap" hidden><label for="f-sub">Jewellery type</label><select id="f-sub"></select></div>
+      </div>
+      <div class="two">
+        <div><label for="f-price">Price (₹)</label><input id="f-price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
+        <div><label for="f-img">Image link (optional)</label><input id="f-img" type="url" placeholder="https://…"></div>
+      </div>
+      <label for="f-desc">Description (optional)</label><textarea id="f-desc" rows="3" maxlength="1000"></textarea>
+      <label><input id="f-stock" type="checkbox" checked>In stock</label>
+      <div class="row"><button class="btn" type="submit">Save product</button><button class="btn line" type="button" id="cancelBtn">Cancel</button></div>
+      <p class="msg" id="formMsg" role="status"></p>
+    </form>
+  </div>
+  <p class="msg" id="listMsg" role="status"></p>
+  <div class="list" id="list"></div>
+</div>
+
+</div></main>
+<script src="config.js"></script>
+<script src="admin.js"></script>
+</body>
+</html>
