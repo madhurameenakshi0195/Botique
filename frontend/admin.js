@@ -9,14 +9,35 @@ let items = [], editingId = null;
 function say(el, text, kind) { el.textContent = text || ''; el.className = 'msg' + (kind ? ' ' + kind : ''); }
 
 async function api(path, opts = {}) {
+  const headers = {
+    ...(token ? { Authorization: 'Bearer ' + token } : {}),
+    ...opts.headers
+  };
+
+  // Only set JSON Content-Type for normal JSON requests.
+  // For FormData, the browser sets the multipart boundary automatically.
+  if (!(opts.body instanceof FormData)) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const res = await fetch(API + path, {
     ...opts,
-    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) }
+    headers
   });
-  if (res.status === 401 && token && path !== '/api/admin/login') { logout(); throw new Error('Your session ended. Please log in again.'); }
+
+  if (res.status === 401 && token && path !== '/api/admin/login') {
+    logout();
+    throw new Error('Your session ended. Please log in again.');
+  }
+
   if (res.status === 204) return null;
+
   const data = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+
+  if (!res.ok) {
+    throw new Error(data.error || 'Something went wrong.');
+  }
+
   return data;
 }
 
@@ -42,7 +63,27 @@ $('#f-cat').innerHTML = Object.keys(CATS).map(c => `<option>${esc(c)}</option>`)
 $('#f-sub').innerHTML = CATS.Jewellery.map(c => `<option>${c}</option>`).join('');
 function syncSub() { $('#subWrap').hidden = $('#f-cat').value !== 'Jewellery'; }
 $('#f-cat').addEventListener('change', syncSub);
+$('#f-cat').addEventListener('change', syncSub);
 
+// Image upload preview
+const fileInput = $('#f-file');
+const imagePreview = $('#imagePreview');
+const imagePreviewWrap = $('#imagePreviewWrap');
+
+fileInput.addEventListener('change', () => {
+  const file = fileInput.files[0];
+
+  if (!file) {
+    imagePreviewWrap.hidden = true;
+    imagePreview.removeAttribute('src');
+    return;
+  }
+
+  const previewUrl = URL.createObjectURL(file);
+
+  imagePreview.src = previewUrl;
+  imagePreviewWrap.hidden = false;
+});
 function openForm(p) {
   editingId = p ? p.id : null;
   $('#formTitle').textContent = p ? 'Edit product' : 'Add product';
@@ -52,6 +93,16 @@ function openForm(p) {
   $('#f-sub').value = p && p.subcategory ? p.subcategory : 'Necklace';
   $('#f-price').value = p ? p.price : '';
   $('#f-img').value = p ? p.image_url : '';
+
+  fileInput.value = '';
+
+  if (p && p.image_url) {
+    imagePreview.src = p.image_url;
+    imagePreviewWrap.hidden = false;
+  } else {
+    imagePreviewWrap.hidden = true;
+    imagePreview.removeAttribute('src');
+  }
   $('#f-desc').value = p ? p.description : '';
   $('#f-stock').checked = p ? p.in_stock : true;
   say($('#formMsg'), '');
@@ -64,15 +115,58 @@ $('#cancelBtn').addEventListener('click', closeForm);
 
 $('#pform').addEventListener('submit', async e => {
   e.preventDefault();
-  const body = {
-    name: $('#f-name').value, category: $('#f-cat').value, subcategory: $('#f-sub').value,
-    price: $('#f-price').value, image_url: $('#f-img').value, description: $('#f-desc').value, in_stock: $('#f-stock').checked
-  };
+
   say($('#formMsg'), 'Saving…');
+
   try {
-    await api(editingId ? `/api/products/${editingId}` : '/api/products', { method: editingId ? 'PUT' : 'POST', body: JSON.stringify(body) });
-    closeForm(); say($('#listMsg'), 'Product saved.', 'ok'); refresh();
-  } catch (err) { say($('#formMsg'), err.message, 'err'); }
+    let imageUrl = $('#f-img').value;
+
+    // 1. Upload selected image to Cloudinary.
+    const file = fileInput.files[0];
+
+    if (file) {
+      say($('#formMsg'), 'Uploading image…');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResult = await api('/api/products/upload', {
+        method: 'POST',
+        body: formData
+      });
+
+      imageUrl = uploadResult.imageUrl;
+    }
+
+    // 2. Prepare product information.
+    const body = {
+      name: $('#f-name').value,
+      category: $('#f-cat').value,
+      subcategory: $('#f-sub').value,
+      price: $('#f-price').value,
+      image_url: imageUrl,
+      description: $('#f-desc').value,
+      in_stock: $('#f-stock').checked
+    };
+
+    // 3. Save product with Cloudinary image URL.
+    say($('#formMsg'), 'Saving product…');
+
+    await api(
+        editingId ? `/api/products/${editingId}` : '/api/products',
+        {
+          method: editingId ? 'PUT' : 'POST',
+          body: JSON.stringify(body)
+        }
+    );
+
+    closeForm();
+    say($('#listMsg'), 'Product saved successfully!', 'ok');
+    refresh();
+
+  } catch (err) {
+    say($('#formMsg'), err.message, 'err');
+  }
 });
 
 function row(p) {
@@ -95,4 +189,6 @@ $('#list').addEventListener('click', async e => {
     catch (err) { say($('#listMsg'), err.message, 'err'); }
   }
 });
+
+
 show();

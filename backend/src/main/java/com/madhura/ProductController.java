@@ -3,7 +3,8 @@ package com.madhura;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +20,14 @@ public class ProductController {
             "Women's essentials", List.of());
 
     private final ProductRepository repo;
+    private final CloudinaryService cloudinaryService;
 
-    public ProductController(ProductRepository repo) {
+    public ProductController(
+            ProductRepository repo,
+            CloudinaryService cloudinaryService) {
+
         this.repo = repo;
+        this.cloudinaryService = cloudinaryService;
     }
 
     // ---------- public: read only ----------
@@ -56,6 +62,16 @@ public class ProductController {
         Product p = find(id);
         apply(p, r);
         return repo.save(p);
+    }
+
+    // ---------- admin only: upload product image ----------
+    @PostMapping("/upload")
+    public Map<String, String> uploadImage(
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        String imageUrl = cloudinaryService.upload(file);
+
+        return Map.of("imageUrl", imageUrl);
     }
 
     @DeleteMapping("/{id}")

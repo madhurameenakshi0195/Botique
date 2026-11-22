@@ -34,8 +34,31 @@
         <div id="subWrap" hidden><label for="f-sub">Jewellery type</label><select id="f-sub"></select></div>
       </div>
       <div class="two">
-        <div><label for="f-price">Price (₹)</label><input id="f-price" type="number" min="0" step="0.01" inputmode="decimal" required></div>
-        <div><label for="f-img">Image link (optional)</label><input id="f-img" type="url" placeholder="https://…"></div>
+        <div>
+          <label for="f-price">Price (₹)</label>
+          <input id="f-price" type="number" min="0" step="0.01" inputmode="decimal" required>
+        </div>
+
+        <div>
+          <label for="f-img">Image URL (optional)</label>
+          <input id="f-img" type="url" placeholder="https://…">
+        </div>
+      </div>
+
+      <label for="f-file">Upload product image</label>
+      <input
+              id="f-file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+      >
+
+      <div id="imagePreviewWrap" hidden>
+        <p>Image preview</p>
+        <img
+                id="imagePreview"
+                alt="Selected product preview"
+                style="width:160px;height:180px;object-fit:cover;border-radius:8px;"
+        >
       </div>
       <label for="f-desc">Description (optional)</label><textarea id="f-desc" rows="3" maxlength="1000"></textarea>
       <label><input id="f-stock" type="checkbox" checked>In stock</label>
