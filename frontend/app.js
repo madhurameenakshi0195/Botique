@@ -47,8 +47,20 @@ document.addEventListener('click', e => {
 });
 
 const o = window.SITE.owner;
-for (const [id, v] of [['o-name', o.name], ['o-phone', o.phone], ['o-address', o.address]]) {
+
+for (const [id, v] of [
+  ['o-name', o.name],
+  ['o-phone', o.phone],
+  ['o-address', o.address]
+]) {
   const el = $('#' + id);
-  if (v) el.textContent = v; else el.className = 'blank';
+
+  if (!el) continue;
+
+  if (v) {
+    el.textContent = v;
+  } else {
+    el.className = 'blank';
+  }
 }
 load();
